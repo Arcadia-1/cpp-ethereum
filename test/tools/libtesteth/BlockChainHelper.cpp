@@ -250,7 +250,7 @@ void TestBlock::mine(TestBlockChain const& _bc)
     }
 
     m_blockHeader = BlockHeader(block.blockData());  // NOTE no longer checked at this point in new
-                                                     // API. looks like it was unimportant anyway
+    // API. looks like it was unimportant anyway
     cnote << "Mined TrRoot: " << m_blockHeader.transactionsRoot();
     copyStateFrom(block.state());
 

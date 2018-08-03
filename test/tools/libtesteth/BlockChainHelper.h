@@ -87,7 +87,7 @@ public:
     {
         return m_premineHeader;
     }  // should return fields according to m_premineUpdate. this is needed to check that premine
-       // chanes was not lost during mining .
+    // chanes was not lost during mining .
     dev::bytes const& bytes() const { return m_bytes; }
     bytesConstRef receipts() const
     {
@@ -128,7 +128,7 @@ private:
     std::unique_ptr<TransientDirectory> m_tempDirState;
     vector<TestTransaction> m_testTransactions;
     std::map<std::string, bool> m_premineUpdate;  // Test Header alterate options. TODO: Do we
-                                                  // really need this?
+    // really need this?
     BlockHeader m_premineHeader;
     AccountMap m_accountMap;  // Needed for genesis state
     RLPStream m_receipts;

@@ -431,8 +431,12 @@ void ImportTest::importTransaction (json_spirit::mObject const& _o, eth::Transac
             BOOST_THROW_EXCEPTION(ValueTooLarge() << errinfo_comment("Transaction 'value' is equal or greater than 2**256") );
 
         o_tr = _o.at("to").get_str().empty() ?
-            Transaction(toInt(_o.at("value")), toInt(_o.at("gasPrice")), toInt(_o.at("gasLimit")), importData(_o), toInt(_o.at("nonce")), Secret(_o.at("secretKey").get_str())) :
-            Transaction(toInt(_o.at("value")), toInt(_o.at("gasPrice")), toInt(_o.at("gasLimit")), Address(_o.at("to").get_str()), importData(_o), toInt(_o.at("nonce")), Secret(_o.at("secretKey").get_str()));
+                   Transaction(toInt(_o.at("value")), toInt(_o.at("gasPrice")),
+                       toInt(_o.at("gasLimit")), importData(_o), toInt(_o.at("nonce")),
+                       Secret(_o.at("secretKey").get_str())) :
+                   Transaction(toInt(_o.at("value")), toInt(_o.at("gasPrice")),
+                       toInt(_o.at("gasLimit")), Address(_o.at("to").get_str()), importData(_o),
+                       toInt(_o.at("nonce")), Secret(_o.at("secretKey").get_str()));
     }
     else
     {
@@ -452,8 +456,11 @@ void ImportTest::importTransaction (json_spirit::mObject const& _o, eth::Transac
         {
             // create unsigned transaction
             o_tr = _o.at("to").get_str().empty() ?
-                Transaction(toInt(_o.at("value")), toInt(_o.at("gasPrice")), toInt(_o.at("gasLimit")), importData(_o), toInt(_o.at("nonce"))) :
-                Transaction(toInt(_o.at("value")), toInt(_o.at("gasPrice")), toInt(_o.at("gasLimit")), Address(_o.at("to").get_str()), importData(_o), toInt(_o.at("nonce")));
+                       Transaction(toInt(_o.at("value")), toInt(_o.at("gasPrice")),
+                           toInt(_o.at("gasLimit")), importData(_o), toInt(_o.at("nonce"))) :
+                       Transaction(toInt(_o.at("value")), toInt(_o.at("gasPrice")),
+                           toInt(_o.at("gasLimit")), Address(_o.at("to").get_str()), importData(_o),
+                           toInt(_o.at("nonce")));
         }
         catch (Exception& _e)
         {
@@ -509,21 +516,21 @@ void ImportTest::importTransaction(json_spirit::mObject const& o_tr)
 int ImportTest::compareStates(State const& _stateExpect, State const& _statePost, AccountMaskMap const _expectedStateOptions, WhenError _throw)
 {
     bool wasError = false;
-    #define CHECK(a,b)						\
-        {									\
-            if (_throw == WhenError::Throw) \
-            {								\
-                BOOST_CHECK_MESSAGE(a, b);	\
-                if (!a)						\
-                    return 1;				\
-            }								\
-            else							\
-            {								\
-                BOOST_WARN_MESSAGE(a,b);	\
-                if (!a)						\
-                    wasError = true;		\
-            }								\
-        }
+#define CHECK(a, b)                     \
+    {                                   \
+        if (_throw == WhenError::Throw) \
+        {                               \
+            BOOST_CHECK_MESSAGE(a, b);  \
+            if (!a)                     \
+                return 1;               \
+        }                               \
+        else                            \
+        {                               \
+            BOOST_WARN_MESSAGE(a, b);   \
+            if (!a)                     \
+                wasError = true;        \
+        }                               \
+    }
 
     for (auto const& a: _stateExpect.addresses())
     {
@@ -555,29 +562,46 @@ int ImportTest::compareStates(State const& _stateExpect, State const& _statePost
 
             if (addressOptions.hasBalance())
                 CHECK((_stateExpect.balance(a.first) == _statePost.balance(a.first)),
-                TestOutputHelper::get().testName() + " Check State: " << a.first <<  ": incorrect balance " << _statePost.balance(a.first) << ", expected " << _stateExpect.balance(a.first));
+                    TestOutputHelper::get().testName() + " Check State: "
+                        << a.first << ": incorrect balance " << _statePost.balance(a.first)
+                        << ", expected " << _stateExpect.balance(a.first));
 
             if (addressOptions.hasNonce())
                 CHECK((_stateExpect.getNonce(a.first) == _statePost.getNonce(a.first)),
-                TestOutputHelper::get().testName() + " Check State: " << a.first <<  ": incorrect nonce " << _statePost.getNonce(a.first) << ", expected " << _stateExpect.getNonce(a.first));
+                    TestOutputHelper::get().testName() + " Check State: "
+                        << a.first << ": incorrect nonce " << _statePost.getNonce(a.first)
+                        << ", expected " << _stateExpect.getNonce(a.first));
 
             if (addressOptions.hasStorage())
             {
                 map<h256, pair<u256, u256>> stateStorage = _statePost.storage(a.first);
                 for (auto const& s: _stateExpect.storage(a.first))
                     CHECK((stateStorage[s.first] == s.second),
-                    TestOutputHelper::get().testName() + " Check State: " << a.first << ": incorrect storage [" << toCompactHexPrefixed(s.second.first) << "] = " << toCompactHexPrefixed(stateStorage[s.first].second) << ", expected [" << toCompactHexPrefixed(s.second.first) << "] = " << toCompactHexPrefixed(s.second.second));
+                        TestOutputHelper::get().testName() + " Check State: "
+                            << a.first << ": incorrect storage ["
+                            << toCompactHexPrefixed(s.second.first)
+                            << "] = " << toCompactHexPrefixed(stateStorage[s.first].second)
+                            << ", expected [" << toCompactHexPrefixed(s.second.first)
+                            << "] = " << toCompactHexPrefixed(s.second.second));
 
                 //Check for unexpected storage values
                 map<h256, pair<u256, u256>> expectedStorage = _stateExpect.storage(a.first);
                 for (auto const& s: _statePost.storage(a.first))
                     CHECK((expectedStorage[s.first] == s.second),
-                    TestOutputHelper::get().testName() + " Check State: " << a.first << ": incorrect storage [" << toCompactHexPrefixed(s.second.first) << "] = " << toCompactHexPrefixed(s.second.second) << ", expected [" << toCompactHexPrefixed(s.second.first) << "] = " << toCompactHexPrefixed(expectedStorage[s.first].second));
+                        TestOutputHelper::get().testName() + " Check State: "
+                            << a.first << ": incorrect storage ["
+                            << toCompactHexPrefixed(s.second.first)
+                            << "] = " << toCompactHexPrefixed(s.second.second) << ", expected ["
+                            << toCompactHexPrefixed(s.second.first)
+                            << "] = " << toCompactHexPrefixed(expectedStorage[s.first].second));
             }
 
             if (addressOptions.hasCode())
                 CHECK((_stateExpect.code(a.first) == _statePost.code(a.first)),
-                TestOutputHelper::get().testName() + " Check State: " << a.first <<  ": incorrect code '" << toHexPrefixed(_statePost.code(a.first)) << "', expected '" << toHexPrefixed(_stateExpect.code(a.first)) << "'");
+                    TestOutputHelper::get().testName() + " Check State: "
+                        << a.first << ": incorrect code '"
+                        << toHexPrefixed(_statePost.code(a.first)) << "', expected '"
+                        << toHexPrefixed(_stateExpect.code(a.first)) << "'");
         }
     }
 
@@ -794,14 +818,16 @@ void ImportTest::traceStateDiff()
     for(auto const& tr : m_transactions)
     {
         if (network == netIdToString(tr.netId) || network == "ALL")
-        if ((d == tr.dataInd || d == -1) && (g == tr.gasInd || g == -1) && (v == tr.valInd || v == -1))
-        {
-            std::ostringstream log;
-            log << "trNetID: " << netIdToString(tr.netId) << "\n";
-            log << "trDataInd: " << tr.dataInd << " tdGasInd: " << tr.gasInd << " trValInd: " << tr.valInd << "\n";
-            LOG(m_logger) << log.str();
-            fillJsonWithStateChange(m_statePre, tr.postState, tr.changeLog); //output std log
-        }
+            if ((d == tr.dataInd || d == -1) && (g == tr.gasInd || g == -1) &&
+                (v == tr.valInd || v == -1))
+            {
+                std::ostringstream log;
+                log << "trNetID: " << netIdToString(tr.netId) << "\n";
+                log << "trDataInd: " << tr.dataInd << " tdGasInd: " << tr.gasInd
+                    << " trValInd: " << tr.valInd << "\n";
+                LOG(m_logger) << log.str();
+                fillJsonWithStateChange(m_statePre, tr.postState, tr.changeLog);  // output std log
+            }
     }
 }
 
